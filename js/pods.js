@@ -35,7 +35,7 @@ function init() {
 	camera.position.set( 100, 150, 5000 );
 	camera.target = new THREE.Vector3( 0, 150, 0 );
 
-	renderer = new THREE.CanvasRenderer();
+	renderer = new THREE.WebGLRenderer();
 	renderer.setClearColor( 0xf0f0f0 );
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	document.body.appendChild( renderer.domElement );
