@@ -1,7 +1,11 @@
-var container, stats;
-var video;
+var container;
 
 var camera, scene, renderer, objects;
+
+var video, image, imageContext,
+imageReflection, imageReflectionContext, imageReflectionGradient,
+texture, textureReflection;
+
 var pointLight;
 
 var sphere;
@@ -25,20 +29,10 @@ var moveDown = false;
 var targetMoveLeft = false;
 var targetMoveRight = false;
 
-// var debugContext;
-
 init();
 animate();
 
 function init() {
-	// create the video element
-	video = document.createElement( 'video' );
-	video.setAttribute('loop', true);
-	// video.id = 'video';
-	// video.type = ' video/ogg; codecs="theora, vorbis" ';
-	video.src = "textures/trailer.mp4";
-	video.load(); // must call after setting/changing source
-	
 
 	container = document.createElement( 'div' );
 	document.body.appendChild( container );
@@ -48,30 +42,24 @@ function init() {
 	camera.target = new THREE.Vector3( 0, 150, 0 );
 
 	scene = new THREE.Scene();
+	// creating video element to hold video
+	video = document.createElement( 'video' );
+	video.setAttribute('loop', true);
+	video.src = "textures/trailer.mp4";
+	video.load(); // must call after setting/changing source
 	
 
+	// creating second canvas 
+	image = document.createElement( 'canvas' );
+	image.width = 480;
+	image.height = 204;
 
-	// Grid
+	imageContext = image.getContext( '2d' );
+	imageContext.fillStyle = '#000000';
+	imageContext.fillRect( 0, 0, 480, 204 );
 
-	// var size = 500, step = 100;
-
-	// var geometry = new THREE.Geometry();
-
-	// for ( var i = - size; i <= size; i += step ) {
-
-	// 	geometry.vertices.push( new THREE.Vector3( - size, 0, i ) );
-	// 	geometry.vertices.push( new THREE.Vector3(   size, 0, i ) );
-
-	// 	geometry.vertices.push( new THREE.Vector3( i, 0, - size ) );
-	// 	geometry.vertices.push( new THREE.Vector3( i, 0,   size ) );
-
-	// }
-
-	// var material = new THREE.LineBasicMaterial( { color: 0x000000, opacity: 0.5 } );
-
-	// var line = new THREE.Line( geometry, material );
-	// line.type = THREE.LinePieces;
-	// scene.add( line );
+	// creating texture that renders the image data from the canvas
+	texture = new THREE.Texture( image );
 
 	// Spheres
 
@@ -79,6 +67,7 @@ function init() {
 
 	geometry = new THREE.SphereGeometry( 100, 32, 32 );
 	video.play()
+	// applying texture to the spheres
 	texture = new THREE.VideoTexture(video, new THREE.SphericalReflectionMapping());
 	material = new THREE.MeshBasicMaterial( { envMap: texture, overdraw: 0.5 } );
 
@@ -122,29 +111,6 @@ function init() {
 	renderer.setClearColor( 0xf0f0f0 );
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	container.appendChild( renderer.domElement );
-
-	// var debugCanvas = document.createElement( 'canvas' );
-	// debugCanvas.width = 512;
-	// debugCanvas.height = 512;
-	// debugCanvas.style.position = 'absolute';
-	// debugCanvas.style.top = '0px';
-	// debugCanvas.style.left = '0px';
-
-	// container.appendChild( debugCanvas );
-
-	// debugContext = debugCanvas.getContext( '2d' );
-	// debugContext.setTransform( 1, 0, 0, 1, 256, 256 );
-	// debugContext.strokeStyle = '#000000';
-
-	// stats = new Stats();
-	// stats.domElement.style.position = 'absolute';
-	// stats.domElement.style.top = '0px';
-	// container.appendChild(stats.domElement);
-
-	// document.addEventListener( 'keydown', onDocumentKeyDown, false );
-	// document.addEventListener( 'keyup', onDocumentKeyUp, false );
-
-	//
 
 	window.addEventListener( 'resize', onWindowResize, false );
 
@@ -252,6 +218,14 @@ function render() {
 		object.position.y = Math.sin( object.rotation.x ) * 200;
 
 		// debugContext.rect( object.position.x * 0.1 - 5, object.position.z * 0.1 - 5, 10, 10 );
+
+	}
+
+	if ( video.readyState === video.HAVE_ENOUGH_DATA ) {
+
+		imageContext.drawImage( video, 0, 0 );
+
+		if ( texture ) texture.needsUpdate = true;
 
 	}
 
